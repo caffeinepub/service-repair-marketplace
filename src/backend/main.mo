@@ -75,6 +75,17 @@ actor {
     };
   };
 
+  // Helper: check if a principal is an SRM admin (by role in users map OR system admin)
+  func isSRMAdmin(principal : Principal) : Bool {
+    if (AccessControl.isAdmin(accessControlState, principal)) {
+      return true;
+    };
+    switch (users.get(principal)) {
+      case (?user) { user.role == #admin };
+      case null { false };
+    };
+  };
+
   public query ({ caller }) func getCallerUserProfile() : async ?UserInfo {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can access profiles");
@@ -94,14 +105,14 @@ actor {
   };
 
   public query ({ caller }) func getAllUsers() : async [UserInfo] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not isSRMAdmin(caller)) {
       Runtime.trap("Unauthorized: Only admins can perform this action");
     };
     users.values().toArray().sort();
   };
 
   public shared ({ caller }) func verifyProvider(providerId : UserID) : async () {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
+    if (not isSRMAdmin(caller)) {
       Runtime.trap("Unauthorized: Only admins can verify providers");
     };
     let updatedUserList : List.List<UserInfo> = List.empty();
@@ -123,7 +134,7 @@ actor {
   };
 
   public query ({ caller }) func getUnverifiedProviders() : async [UserInfo] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not isSRMAdmin(caller)) {
       Runtime.trap("Unauthorized: Only admins can perform this action");
     };
     let allUserList : List.List<UserInfo> = List.empty();
@@ -229,17 +240,17 @@ actor {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can save jobs");
     };
-    // Verify caller is an institution
+    // Verify caller is an institution or admin
     switch (users.get(caller)) {
       case (null) { Runtime.trap("User profile not found") };
       case (?user) {
-        if (user.role != #institution and not AccessControl.isAdmin(accessControlState, caller)) {
+        if (user.role != #institution and not isSRMAdmin(caller)) {
           Runtime.trap("Unauthorized: Only institutions can create jobs");
         };
       };
     };
     // Ensure postedBy matches caller
-    if (jobInfo.postedBy != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+    if (jobInfo.postedBy != caller and not isSRMAdmin(caller)) {
       Runtime.trap("Unauthorized: Can only create jobs for yourself");
     };
     id += 1;
@@ -255,18 +266,18 @@ actor {
       case (null) { Runtime.trap("Job does not exist") };
       case (?jobInfo) {
         // Only the institution that posted the job or admin can update it
-        if (caller != jobInfo.postedBy and not AccessControl.isAdmin(accessControlState, caller)) {
+        if (caller != jobInfo.postedBy and not isSRMAdmin(caller)) {
           Runtime.trap("Unauthorized: Can only update jobs you have posted");
         };
-        // Verify caller is an institution
+        // Verify caller is an institution or admin
         switch (users.get(caller)) {
           case (null) { 
-            if (not AccessControl.isAdmin(accessControlState, caller)) {
+            if (not isSRMAdmin(caller)) {
               Runtime.trap("User profile not found");
             };
           };
           case (?user) {
-            if (user.role != #institution and not AccessControl.isAdmin(accessControlState, caller)) {
+            if (user.role != #institution and not isSRMAdmin(caller)) {
               Runtime.trap("Unauthorized: Only institutions can update jobs");
             };
           };
@@ -381,17 +392,17 @@ actor {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only registered users can submit jobs");
     };
-    // Verify caller is an institution
+    // Verify caller is an institution or admin
     switch (users.get(caller)) {
       case (null) { Runtime.trap("User profile not found") };
       case (?user) {
-        if (user.role != #institution and not AccessControl.isAdmin(accessControlState, caller)) {
+        if (user.role != #institution and not isSRMAdmin(caller)) {
           Runtime.trap("Unauthorized: Only institutions can submit jobs");
         };
       };
     };
     // Ensure postedBy matches caller
-    if (jobInfo.postedBy != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+    if (jobInfo.postedBy != caller and not isSRMAdmin(caller)) {
       Runtime.trap("Unauthorized: Can only submit jobs for yourself");
     };
     jobs.add(jobInfo.id, jobInfo);
@@ -405,7 +416,7 @@ actor {
     switch (jobs.get(jobId)) {
       case (null) { Runtime.trap("Job does not exist") };
       case (?job) {
-        if (caller != job.postedBy and not AccessControl.isAdmin(accessControlState, caller)) {
+        if (caller != job.postedBy and not isSRMAdmin(caller)) {
           Runtime.trap("Unauthorized: Can only view bids for jobs you posted");
         };
       };
@@ -424,22 +435,22 @@ actor {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can accept bids");
     };
-    // Verify the job exists and caller is the institution that posted it
+    // Verify the job exists and caller is the institution that posted it OR is an admin
     switch (jobs.get(jobId)) {
       case (null) { Runtime.trap("Job does not exist") };
       case (?job) {
-        if (caller != job.postedBy and not AccessControl.isAdmin(accessControlState, caller)) {
+        if (caller != job.postedBy and not isSRMAdmin(caller)) {
           Runtime.trap("Unauthorized: Can only accept bids for jobs you posted");
         };
-        // Verify caller is an institution
+        // Verify caller is an institution or admin
         switch (users.get(caller)) {
           case (null) { 
-            if (not AccessControl.isAdmin(accessControlState, caller)) {
+            if (not isSRMAdmin(caller)) {
               Runtime.trap("User profile not found");
             };
           };
           case (?user) {
-            if (user.role != #institution and not AccessControl.isAdmin(accessControlState, caller)) {
+            if (user.role != #institution and not isSRMAdmin(caller)) {
               Runtime.trap("Unauthorized: Only institutions can accept bids");
             };
           };
@@ -461,6 +472,14 @@ actor {
         // Update the status of the bid
         bids.add(bidId, { bid with status = #accepted });
 
+        // Update the job: set assignedTo and status to assigned
+        switch (jobs.get(jobId)) {
+          case (null) {};
+          case (?job) {
+            jobs.add(jobId, { job with assignedTo = ?bid.userId; status = #assigned });
+          };
+        };
+
         // Reject all other bids for the job
         for (otherBid in bids.values()) {
           if (otherBid.jobId == jobId and otherBid.id != bidId and otherBid.status == #pending) {
@@ -478,22 +497,22 @@ actor {
     switch (bids.get(bidId)) {
       case (null) { Runtime.trap("Bid does not exist") };
       case (?bidInfo) {
-        // Verify the job exists and caller is the institution that posted it
+        // Verify the job exists and caller is the institution that posted it or admin
         switch (jobs.get(bidInfo.jobId)) {
           case (null) { Runtime.trap("Job does not exist") };
           case (?job) {
-            if (caller != job.postedBy and not AccessControl.isAdmin(accessControlState, caller)) {
+            if (caller != job.postedBy and not isSRMAdmin(caller)) {
               Runtime.trap("Unauthorized: Can only reject bids for jobs you posted");
             };
-            // Verify caller is an institution
+            // Verify caller is an institution or admin
             switch (users.get(caller)) {
               case (null) { 
-                if (not AccessControl.isAdmin(accessControlState, caller)) {
+                if (not isSRMAdmin(caller)) {
                   Runtime.trap("User profile not found");
                 };
               };
               case (?user) {
-                if (user.role != #institution and not AccessControl.isAdmin(accessControlState, caller)) {
+                if (user.role != #institution and not isSRMAdmin(caller)) {
                   Runtime.trap("Unauthorized: Only institutions can reject bids");
                 };
               };
@@ -519,7 +538,7 @@ actor {
         switch (jobs.get(bid.jobId)) {
           case (null) { null };
           case (?job) {
-            if (caller == bid.userId or caller == job.postedBy or AccessControl.isAdmin(accessControlState, caller)) {
+            if (caller == bid.userId or caller == job.postedBy or isSRMAdmin(caller)) {
               ?bid;
             } else {
               Runtime.trap("Unauthorized: Can only view your own bids or bids for your jobs");
@@ -557,11 +576,11 @@ actor {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can submit reviews");
     };
-    // Verify caller is an institution
+    // Verify caller is an institution or admin
     switch (users.get(caller)) {
       case (null) { Runtime.trap("User profile not found") };
       case (?user) {
-        if (user.role != #institution and not AccessControl.isAdmin(accessControlState, caller)) {
+        if (user.role != #institution and not isSRMAdmin(caller)) {
           Runtime.trap("Unauthorized: Only institutions can submit reviews");
         };
       };
@@ -570,7 +589,7 @@ actor {
     switch (jobs.get(reviewInfo.jobId)) {
       case (null) { Runtime.trap("Job does not exist") };
       case (?job) {
-        if (caller != job.postedBy and not AccessControl.isAdmin(accessControlState, caller)) {
+        if (caller != job.postedBy and not isSRMAdmin(caller)) {
           Runtime.trap("Unauthorized: Can only review jobs you posted");
         };
         if (job.status != #completed) {
@@ -588,7 +607,7 @@ actor {
       };
     };
     // Ensure institutionId matches caller
-    if (reviewInfo.institutionId != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+    if (reviewInfo.institutionId != caller and not isSRMAdmin(caller)) {
       Runtime.trap("Unauthorized: Can only submit reviews for yourself");
     };
     // Validate rating is between 1 and 5
@@ -625,7 +644,7 @@ actor {
   };
 
   public query ({ caller }) func getAnalytics() : async Analytics {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not isSRMAdmin(caller)) {
       Runtime.trap("Unauthorized: Only admins can access analytics");
     };
     let totalUsers = users.size();
