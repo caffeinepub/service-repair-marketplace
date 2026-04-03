@@ -45,6 +45,13 @@ const ROLE_OPTIONS = [
     icon: HardHat,
     activeColor: "border-accent-orange bg-accent-orange text-white",
   },
+  {
+    value: SRMRole.admin,
+    label: "Platform Admin",
+    desc: "Verify providers, monitor jobs, and manage the platform.",
+    icon: ShieldCheck,
+    activeColor: "border-green-600 bg-green-600 text-white",
+  },
 ];
 
 export default function AuthPage() {
@@ -166,10 +173,10 @@ export default function AuthPage() {
         createdAt: BigInt(Date.now()),
       });
       toast.success("Profile created! Welcome to SRM.");
-      const dest =
-        selectedRole === SRMRole.institution
-          ? "/dashboard/institution"
-          : "/dashboard/provider";
+      let dest = "/dashboard/institution";
+      if (selectedRole === SRMRole.serviceProvider)
+        dest = "/dashboard/provider";
+      if (selectedRole === SRMRole.admin) dest = "/dashboard/admin";
       void navigate({ to: dest });
     } catch (err: any) {
       toast.error(err?.message ?? "Failed to save profile");
@@ -226,10 +233,10 @@ export default function AuthPage() {
                       const isSelected = selectedRole === opt.value;
                       return (
                         <button
-                          key={opt.value}
+                          key={String(opt.value)}
                           type="button"
                           onClick={() => setSelectedRole(opt.value)}
-                          data-ocid={`auth.role.${opt.value}.button`}
+                          data-ocid={`auth.role.${String(opt.value)}.button`}
                           className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
                             isSelected
                               ? "border-primary bg-primary/5"
@@ -342,7 +349,7 @@ export default function AuthPage() {
                           data-ocid="auth.organization.input"
                         />
                       </div>
-                    ) : (
+                    ) : selectedRole === SRMRole.serviceProvider ? (
                       <>
                         <div className="space-y-1.5">
                           <Label htmlFor="skills">
@@ -375,6 +382,15 @@ export default function AuthPage() {
                           />
                         </div>
                       </>
+                    ) : (
+                      /* Admin role -- just name and phone, no extra fields */
+                      <div className="rounded-xl bg-green-50 border border-green-200 p-3">
+                        <p className="text-xs text-green-700 font-medium">
+                          You are registering as a Platform Admin. You will have
+                          full access to verify providers, monitor jobs, and
+                          manage all users.
+                        </p>
+                      </div>
                     )}
 
                     <div className="flex gap-3 pt-2">
