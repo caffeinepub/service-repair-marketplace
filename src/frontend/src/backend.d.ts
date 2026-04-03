@@ -19,6 +19,7 @@ export type Time = bigint;
 export type ReviewID = bigint;
 export interface UserInfo {
     principal: Principal;
+    profileImage?: ExternalBlob;
     name: string;
     createdAt: Time;
     role: SRMRole;
@@ -107,6 +108,7 @@ export interface backendInterface {
     acceptBid(bidId: bigint, jobId: bigint): Promise<void>;
     addUser(newUserInfo: UserInfo): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    deleteUser(userId: Principal): Promise<void>;
     exists(): Promise<boolean>;
     filterJobsByCategory(category: string): Promise<Array<JobInfo>>;
     filterJobsByStatus(status: JobStatus): Promise<Array<JobInfo>>;

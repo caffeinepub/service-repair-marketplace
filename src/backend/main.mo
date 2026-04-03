@@ -15,6 +15,8 @@ import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import UserApproval "user-approval/approval";
 
+
+
 actor {
   include MixinStorage();
 
@@ -65,6 +67,7 @@ actor {
     skills : Text; // For providers, comma separated
     isVerified : Bool;
     createdAt : Time.Time;
+    profileImage : ?Storage.ExternalBlob;
   };
 
   let users = Map.empty<UserID, UserInfo>();
@@ -193,6 +196,13 @@ actor {
       Runtime.trap("Unauthorized: Can only create your own profile");
     };
     users.add(caller, newUserInfo);
+  };
+
+  public shared ({ caller }) func deleteUser(userId : Principal) : async () {
+    if (not isSRMAdmin(caller)) {
+      Runtime.trap("Unauthorized: Only admins can delete users");
+    };
+    users.remove(userId);
   };
 
   // Job and Bid Setup

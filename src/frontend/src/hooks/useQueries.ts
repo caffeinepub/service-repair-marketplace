@@ -25,6 +25,7 @@ export function useGetCallerUserProfile() {
     enabled: !!actor && !actorFetching,
     retry: false,
     staleTime: 1000 * 60 * 5,
+    throwOnError: false,
   });
 
   return {
@@ -67,6 +68,7 @@ export function useGetUnverifiedProviders() {
       return actor.getUnverifiedProviders();
     },
     enabled: !!actor && !isFetching,
+    throwOnError: false,
   });
 }
 
@@ -112,6 +114,20 @@ export function useVerifyProvider() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["unverifiedProviders"] });
       qc.invalidateQueries({ queryKey: ["providers"] });
+      qc.invalidateQueries({ queryKey: ["allUsers"] });
+    },
+  });
+}
+
+export function useDeleteUser() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: import("@icp-sdk/core/principal").Principal) => {
+      if (!actor) throw new Error("Not connected");
+      return actor.deleteUser(userId);
+    },
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["allUsers"] });
     },
   });
@@ -320,6 +336,7 @@ export function useGetAnalytics() {
       return actor.getAnalytics();
     },
     enabled: !!actor && !isFetching,
+    throwOnError: false,
   });
 }
 

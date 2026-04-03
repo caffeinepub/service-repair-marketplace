@@ -1,51 +1,39 @@
-# Service & Repair Marketplace (SRM)
+# Service & Repair Marketplace
 
 ## Current State
-New project. No existing application files.
+
+SRM has three role dashboards. After login, users redirect to their role dashboard.
+Admin dashboard calls getAnalytics() and getUnverifiedProviders() - both require isSRMAdmin().
+
+Bug: after logging in as Platform Admin, the admin dashboard appears blank/empty.
+
+Root causes:
+1. Landing.tsx calls useGetAnalytics() which traps for non-admin users
+2. AdminDashboard has no error/empty fallback - blank when queries fail
+3. useAppContext does not handle query errors from useGetCallerUserProfile
+4. No role guard on admin routes
 
 ## Requested Changes (Diff)
 
 ### Add
-- Full-stack ICP decentralized marketplace connecting Government Institutions (demand) with ITI-trained Service Providers (supply)
-- Three user roles: Admin, Institution, Service Provider
-- Authentication: role-based access with ICP authorization component
-- Institution Dashboard: post jobs (title, description, category, budget, deadline, location, image upload), view/accept/reject bids, track job status
-- Service Provider Dashboard: profile (skills, experience, certifications upload), browse/search/filter jobs, submit bids (amount + message), track assigned work, mark job completed
-- Admin Panel: verify providers, monitor all jobs, basic analytics (job counts, bid counts, user counts), handle disputes (change job status)
-- Job lifecycle: Posted → Bidding → Assigned → InProgress → Completed → Reviewed
-- Bid system: create bid, accept bid (assigns job), reject bid
-- Rating & review system: institution rates provider after job completion
-- Notifications: in-app notification list per user (new bid, bid accepted/rejected, job assigned, job completed)
-- Search & filter: search jobs by title/category/location, filter by status/budget range
-- File uploads: job images and provider certifications via blob-storage component
-- Stable storage for all structured data (users, jobs, bids, reviews, notifications)
+- RequireAdmin wrapper in App.tsx for /dashboard/admin/* routes
+- Error/empty states in AdminDashboard when queries fail
+- isError handling in useAppContext
 
 ### Modify
-- N/A (new project)
+- Landing.tsx: replace useGetAnalytics() with useGetAllJobs()+useGetProviders() for stats
+- useQueries.ts useGetCallerUserProfile: add throwOnError: false
+- useAppContext.tsx: handle isError from profile query
+- AdminDashboard.tsx: add isError states and loading UI
+- App.tsx: add RequireAdmin guard for admin routes
 
 ### Remove
-- N/A (new project)
+- Nothing
 
 ## Implementation Plan
 
-### Backend (Motoko)
-- User management: register, login (username/password hash), get profile, update profile, role-based guards
-- Job management: createJob, getJobs (with filters), getJobById, updateJobStatus, deleteJob
-- Bid management: createBid, getBidsForJob, getBidsForProvider, acceptBid, rejectBid
-- Review management: createReview, getReviewsForProvider
-- Notification management: createNotification, getNotifications, markNotificationRead
-- Admin: verifyProvider, getAnalytics, getAllUsers, getAllJobs, resolveDispute
-- Stable storage: HashMap-based stores for users, jobs, bids, reviews, notifications with auto-incrementing IDs
-- Authorization component for session/role management
-- Blob-storage component for file uploads
-
-### Frontend (React + Tailwind)
-- Landing page: hero, features section, how it works, CTA
-- Auth pages: Login, Register (with role selection)
-- Role-based routing: redirect to correct dashboard after login
-- Institution Dashboard: job post form, my jobs list, job detail (bids panel), status tracker
-- Provider Dashboard: profile editor, job browser (search/filter), job detail (bid form), my bids, assigned jobs
-- Admin Panel: provider verification list, jobs monitor, analytics cards, dispute management
-- Shared components: Navigation, NotificationBell, StatusBadge, LoadingSpinner, ErrorBoundary
-- Mobile-first responsive layout
-- Government-friendly: high contrast, accessible, large touch targets
+1. Fix Landing.tsx stats: use getAllJobs() and getProviders() counts instead of getAnalytics()
+2. Fix useGetCallerUserProfile: add throwOnError: false
+3. Fix useAppContext: handle isError gracefully
+4. Fix AdminDashboard: add error states so blank screen is replaced with informative UI
+5. Add RequireAdmin in App.tsx for admin routes

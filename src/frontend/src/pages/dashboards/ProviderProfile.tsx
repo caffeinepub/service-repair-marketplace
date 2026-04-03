@@ -57,6 +57,9 @@ const NAV_ITEMS = [
 export default function ProviderProfile() {
   const { userProfile, refetchProfile } = useAppContext();
   const updateUser = useUpdateUser();
+  const [profileImage, setProfileImage] = useState<ExternalBlob | undefined>(
+    userProfile?.profileImage ?? undefined,
+  );
   const [form, setForm] = useState({
     name: userProfile?.name ?? "",
     phone: userProfile?.phone ?? "",
@@ -76,6 +79,7 @@ export default function ProviderProfile() {
         skills: form.skills,
         experience: form.experience,
         organization: form.organization,
+        profileImage: profileImage,
       });
       refetchProfile();
       toast.success("Profile updated!");
@@ -105,11 +109,11 @@ export default function ProviderProfile() {
               <>
                 <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-semibold text-green-700">
-                    Verified Provider
+                  <p className="text-sm font-semibold text-green-800">
+                    Account Verified
                   </p>
-                  <p className="text-xs text-green-600">
-                    Your account is verified. You can bid on jobs.
+                  <p className="text-xs text-green-700">
+                    You can bid on posted jobs.
                   </p>
                 </div>
               </>
@@ -117,12 +121,11 @@ export default function ProviderProfile() {
               <>
                 <XCircle className="h-5 w-5 text-yellow-600 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-semibold text-yellow-700">
+                  <p className="text-sm font-semibold text-yellow-800">
                     Pending Verification
                   </p>
-                  <p className="text-xs text-yellow-600">
-                    Admin is reviewing your profile. You'll be notified once
-                    verified.
+                  <p className="text-xs text-yellow-700">
+                    An admin will review and verify your profile soon.
                   </p>
                 </div>
               </>
@@ -130,38 +133,96 @@ export default function ProviderProfile() {
           </CardContent>
         </Card>
 
+        {/* Profile Image */}
         <Card className="border border-border shadow-card rounded-xl">
-          <CardHeader>
-            <CardTitle className="font-display text-xl">Edit Profile</CardTitle>
-            <CardDescription>Update your professional details</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="font-display text-lg">
+              Profile Photo
+            </CardTitle>
+            <CardDescription>Upload a clear photo of yourself</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-5">
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0 border-2 border-border">
+                {profileImage ? (
+                  <img
+                    src={profileImage.getDirectURL()}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="h-8 w-8 text-primary" />
+                )}
+              </div>
+              <div className="flex-1">
+                <FileUpload
+                  accept="image/*"
+                  maxFiles={1}
+                  label="Upload Profile Photo"
+                  onUpload={(blob) => setProfileImage(blob)}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Profile form */}
+        <Card className="border border-border shadow-card rounded-xl">
+          <CardHeader className="flex-row items-center gap-4 pb-3">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden">
+              {profileImage ? (
+                <img
+                  src={profileImage.getDirectURL()}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="h-7 w-7 text-primary" />
+              )}
+            </div>
+            <div>
+              <CardTitle className="font-display text-xl">
+                {userProfile?.name ?? "Service Provider"}
+              </CardTitle>
+              <CardDescription>{userProfile?.organization}</CardDescription>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSave} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="pname">Full Name</Label>
-                  <Input
-                    id="pname"
-                    value={form.name}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, name: e.target.value }))
-                    }
-                    data-ocid="provider.profile.name.input"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="pphone">Phone</Label>
-                  <Input
-                    id="pphone"
-                    value={form.phone}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, phone: e.target.value }))
-                    }
-                    data-ocid="provider.profile.phone.input"
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="pname">Full Name</Label>
+                <Input
+                  id="pname"
+                  value={form.name}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, name: e.target.value }))
+                  }
+                  placeholder="Your full name"
+                  data-ocid="provider.profile.input"
+                />
               </div>
-
+              <div className="space-y-1.5">
+                <Label htmlFor="pphone">Phone</Label>
+                <Input
+                  id="pphone"
+                  value={form.phone}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, phone: e.target.value }))
+                  }
+                  placeholder="+91 XXXXX XXXXX"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="porg">Organization / Company</Label>
+                <Input
+                  id="porg"
+                  value={form.organization}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, organization: e.target.value }))
+                  }
+                  placeholder="Your organization name"
+                />
+              </div>
               <div className="space-y-1.5">
                 <Label htmlFor="pskills">Skills (comma-separated)</Label>
                 <Input
@@ -170,20 +231,22 @@ export default function ProviderProfile() {
                   onChange={(e) =>
                     setForm((p) => ({ ...p, skills: e.target.value }))
                   }
-                  placeholder="Electrical, Plumbing, HVAC"
-                  data-ocid="provider.profile.skills.input"
+                  placeholder="Electrical, Plumbing, Carpentry"
                 />
                 {skillTags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {skillTags.map((s) => (
-                      <Badge key={s} variant="secondary" className="text-xs">
+                      <Badge
+                        key={s}
+                        variant="secondary"
+                        className="text-xs bg-primary/10 text-primary"
+                      >
                         {s}
                       </Badge>
                     ))}
                   </div>
                 )}
               </div>
-
               <div className="space-y-1.5">
                 <Label htmlFor="pexp">Experience</Label>
                 <Textarea
@@ -192,28 +255,15 @@ export default function ProviderProfile() {
                   onChange={(e) =>
                     setForm((p) => ({ ...p, experience: e.target.value }))
                   }
+                  placeholder="Describe your experience and certifications..."
                   rows={3}
-                  placeholder="Describe your ITI qualifications and work experience..."
-                  data-ocid="provider.profile.experience.textarea"
                 />
               </div>
-
-              <div className="space-y-1.5">
-                <Label>Certifications Upload</Label>
-                <FileUpload
-                  onUpload={(_blob: ExternalBlob) =>
-                    toast.info("Certificate uploaded")
-                  }
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  label="Upload ITI Certificates or Qualifications"
-                />
-              </div>
-
               <Button
                 type="submit"
+                className="bg-primary text-white rounded-lg w-full"
                 disabled={updateUser.isPending}
-                className="w-full bg-primary text-white rounded-xl"
-                data-ocid="provider.profile.save.primary_button"
+                data-ocid="provider.profile.save_button"
               >
                 {updateUser.isPending ? (
                   <>
@@ -221,7 +271,7 @@ export default function ProviderProfile() {
                     Saving...
                   </>
                 ) : (
-                  "Save Profile"
+                  "Save Changes"
                 )}
               </Button>
             </form>

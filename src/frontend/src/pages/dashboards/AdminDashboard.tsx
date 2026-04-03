@@ -1,8 +1,10 @@
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@tanstack/react-router";
 import {
+  AlertCircle,
   BarChart3,
   Briefcase,
   ListChecks,
@@ -47,8 +49,15 @@ const NAV_ITEMS = [
 ];
 
 export default function AdminDashboard() {
-  const { data: analytics, isLoading } = useGetAnalytics();
-  const { data: unverified } = useGetUnverifiedProviders();
+  const {
+    data: analytics,
+    isLoading,
+    isError: analyticsError,
+  } = useGetAnalytics();
+  const { data: unverified, isError: unverifiedError } =
+    useGetUnverifiedProviders();
+
+  const hasError = analyticsError || unverifiedError;
 
   const stats = [
     {
@@ -106,6 +115,21 @@ export default function AdminDashboard() {
             Overview of all platform activity
           </p>
         </div>
+
+        {/* Error state */}
+        {hasError && (
+          <Alert
+            variant="destructive"
+            className="rounded-xl"
+            data-ocid="admin.dashboard.error_state"
+          >
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Could not load admin data</AlertTitle>
+            <AlertDescription>
+              You may not have admin permissions, or please refresh the page.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {stats.map((stat, i) => (

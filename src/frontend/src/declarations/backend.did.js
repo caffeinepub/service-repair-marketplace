@@ -19,6 +19,7 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'success' : IDL.Opt(IDL.Bool),
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const Time = IDL.Int;
 export const SRMRole = IDL.Variant({
   'admin' : IDL.Null,
@@ -27,6 +28,7 @@ export const SRMRole = IDL.Variant({
 });
 export const UserInfo = IDL.Record({
   'principal' : IDL.Principal,
+  'profileImage' : IDL.Opt(ExternalBlob),
   'name' : IDL.Text,
   'createdAt' : Time,
   'role' : SRMRole,
@@ -52,7 +54,6 @@ export const JobStatus = IDL.Variant({
   'posted' : IDL.Null,
 });
 export const UserID = IDL.Principal;
-export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const JobInfo = IDL.Record({
   'id' : IDL.Nat,
   'status' : JobStatus,
@@ -141,6 +142,7 @@ export const idlService = IDL.Service({
   'acceptBid' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
   'addUser' : IDL.Func([UserInfo], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'deleteUser' : IDL.Func([IDL.Principal], [], []),
   'exists' : IDL.Func([], [IDL.Bool], ['query']),
   'filterJobsByCategory' : IDL.Func([IDL.Text], [IDL.Vec(JobInfo)], ['query']),
   'filterJobsByStatus' : IDL.Func([JobStatus], [IDL.Vec(JobInfo)], ['query']),
@@ -195,6 +197,7 @@ export const idlFactory = ({ IDL }) => {
     'success' : IDL.Opt(IDL.Bool),
     'topped_up_amount' : IDL.Opt(IDL.Nat),
   });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const Time = IDL.Int;
   const SRMRole = IDL.Variant({
     'admin' : IDL.Null,
@@ -203,6 +206,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const UserInfo = IDL.Record({
     'principal' : IDL.Principal,
+    'profileImage' : IDL.Opt(ExternalBlob),
     'name' : IDL.Text,
     'createdAt' : Time,
     'role' : SRMRole,
@@ -228,7 +232,6 @@ export const idlFactory = ({ IDL }) => {
     'posted' : IDL.Null,
   });
   const UserID = IDL.Principal;
-  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const JobInfo = IDL.Record({
     'id' : IDL.Nat,
     'status' : JobStatus,
@@ -317,6 +320,7 @@ export const idlFactory = ({ IDL }) => {
     'acceptBid' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
     'addUser' : IDL.Func([UserInfo], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'deleteUser' : IDL.Func([IDL.Principal], [], []),
     'exists' : IDL.Func([], [IDL.Bool], ['query']),
     'filterJobsByCategory' : IDL.Func(
         [IDL.Text],

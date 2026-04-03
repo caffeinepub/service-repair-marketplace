@@ -78,6 +78,7 @@ export interface UserApprovalInfo {
 export type UserID = Principal;
 export interface UserInfo {
   'principal' : Principal,
+  'profileImage' : [] | [ExternalBlob],
   'name' : string,
   'createdAt' : Time,
   'role' : SRMRole,
@@ -121,6 +122,7 @@ export interface _SERVICE {
   'acceptBid' : ActorMethod<[bigint, bigint], undefined>,
   'addUser' : ActorMethod<[UserInfo], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'deleteUser' : ActorMethod<[Principal], undefined>,
   'exists' : ActorMethod<[], boolean>,
   'filterJobsByCategory' : ActorMethod<[string], Array<JobInfo>>,
   'filterJobsByStatus' : ActorMethod<[JobStatus], Array<JobInfo>>,

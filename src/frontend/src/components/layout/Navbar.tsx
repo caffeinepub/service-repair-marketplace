@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -93,6 +93,9 @@ export default function Navbar() {
         .slice(0, 2)
     : "?";
 
+  const profileImageUrl =
+    userProfile?.profileImage?.getDirectURL() ?? undefined;
+
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-border shadow-nav">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -103,9 +106,11 @@ export default function Navbar() {
             className="flex items-center gap-2 flex-shrink-0"
             data-ocid="nav.home.link"
           >
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">SRM</span>
-            </div>
+            <img
+              src="/assets/generated/srm-logo-transparent.dim_64x64.png"
+              alt="SRM"
+              className="w-8 h-8 rounded-lg"
+            />
             <span className="font-display font-bold text-foreground text-lg hidden sm:block">
               Service &amp; Repair
             </span>
@@ -151,6 +156,7 @@ export default function Navbar() {
                     data-ocid="nav.user.button"
                   >
                     <Avatar className="h-8 w-8">
+                      <AvatarImage src={profileImageUrl} />
                       <AvatarFallback className="bg-primary text-white text-xs font-semibold">
                         {initials}
                       </AvatarFallback>

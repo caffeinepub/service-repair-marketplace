@@ -28,7 +28,8 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import Footer from "../components/layout/Footer";
 import Navbar from "../components/layout/Navbar";
-import { useGetAnalytics } from "../hooks/useQueries";
+import { useAppContext } from "../hooks/useAppContext";
+import { useGetAllJobs, useGetProviders } from "../hooks/useQueries";
 import { JOB_CATEGORIES } from "../lib/constants";
 
 const HOW_IT_WORKS = [
@@ -83,7 +84,12 @@ const FEATURES = [
 export default function Landing() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
-  const { data: analytics } = useGetAnalytics();
+  const { data: allJobs } = useGetAllJobs();
+  const { data: providers } = useGetProviders();
+  const { isAuthenticated } = useAppContext();
+
+  const totalJobs = allJobs?.length ?? 0;
+  const totalProviders = providers?.length ?? 0;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,33 +166,35 @@ export default function Landing() {
                 </div>
               </form>
 
-              {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-primary text-white rounded-lg shadow-btn hover:bg-primary/90"
-                  data-ocid="landing.institution.primary_button"
-                >
-                  <Link to="/auth">
-                    <Building2 className="h-4 w-4 mr-2" />
-                    I'm an Institution
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-accent-orange text-white rounded-lg hover:bg-accent-orange/90"
-                  data-ocid="landing.provider.primary_button"
-                >
-                  <Link to="/auth">
-                    <HardHat className="h-4 w-4 mr-2" />
-                    I'm a Service Provider
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </Link>
-                </Button>
-              </div>
+              {/* CTAs — only show when not logged in */}
+              {!isAuthenticated && (
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    asChild
+                    size="lg"
+                    className="bg-primary text-white rounded-lg shadow-btn hover:bg-primary/90"
+                    data-ocid="landing.institution.primary_button"
+                  >
+                    <Link to="/auth">
+                      <Building2 className="h-4 w-4 mr-2" />
+                      I'm an Institution
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="bg-accent-orange text-white rounded-lg hover:bg-accent-orange/90"
+                    data-ocid="landing.provider.primary_button"
+                  >
+                    <Link to="/auth">
+                      <HardHat className="h-4 w-4 mr-2" />
+                      I'm a Service Provider
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  </Button>
+                </div>
+              )}
             </motion.div>
 
             <motion.div
@@ -211,19 +219,19 @@ export default function Landing() {
           {[
             {
               label: "Total Jobs",
-              value: analytics ? Number(analytics.totalJobs) : "—",
+              value: totalJobs > 0 ? totalJobs : "—",
               icon: Briefcase,
               color: "text-primary",
             },
             {
               label: "Service Providers",
-              value: analytics ? Number(analytics.totalUsers) : "—",
+              value: totalProviders > 0 ? totalProviders : "—",
               icon: Users,
               color: "text-accent-orange",
             },
             {
               label: "Avg. Rating",
-              value: analytics ? analytics.avgRating.toFixed(1) : "—",
+              value: "—",
               icon: Star,
               color: "text-yellow-500",
             },
@@ -254,88 +262,141 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Role cards */}
+      {/* Role cards — always show admin card; show institution/provider only when logged out */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="border border-border rounded-xl shadow-card overflow-hidden">
-            <div className="h-2 bg-primary" />
-            <CardContent className="p-6">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                <Building2 className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-display font-bold text-foreground text-xl mb-2">
-                For Government Institutions
-              </h3>
-              <p className="text-muted-foreground text-sm mb-4">
-                Post repair &amp; maintenance jobs, review bids from verified
-                providers, track work progress, and manage your entire service
-                procurement digitally.
-              </p>
-              <ul className="space-y-2 mb-5">
-                {[
-                  "Post detailed job requests with images",
-                  "Compare bids and select best provider",
-                  "Track job status in real-time",
-                  "Rate and review service quality",
-                ].map((f) => (
-                  <li
-                    key={f}
-                    className="flex items-center gap-2 text-sm text-foreground/80"
+        <div
+          className={`grid grid-cols-1 gap-6 ${
+            isAuthenticated ? "max-w-md mx-auto" : "md:grid-cols-3"
+          }`}
+        >
+          {!isAuthenticated && (
+            <>
+              <Card className="border border-border rounded-xl shadow-card overflow-hidden">
+                <div className="h-2 bg-primary" />
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                    <Building2 className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-display font-bold text-foreground text-xl mb-2">
+                    For Government Institutions
+                  </h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Post repair &amp; maintenance jobs, review bids from
+                    verified providers, track work progress, and manage your
+                    entire service procurement digitally.
+                  </p>
+                  <ul className="space-y-2 mb-5">
+                    {[
+                      "Post detailed job requests with images",
+                      "Compare bids and select best provider",
+                      "Track job status in real-time",
+                      "Rate and review service quality",
+                    ].map((f) => (
+                      <li
+                        key={f}
+                        className="flex items-center gap-2 text-sm text-foreground/80"
+                      >
+                        <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    asChild
+                    className="bg-primary text-white rounded-lg"
+                    data-ocid="landing.institution.secondary_button"
                   >
-                    <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Button
-                asChild
-                className="bg-primary text-white rounded-lg"
-                data-ocid="landing.institution.secondary_button"
-              >
-                <Link to="/auth">
-                  Get Started <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+                    <Link to="/auth">
+                      Get Started <ArrowRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
 
-          <Card className="border border-border rounded-xl shadow-card overflow-hidden">
-            <div className="h-2 bg-accent-orange" />
+              <Card className="border border-border rounded-xl shadow-card overflow-hidden">
+                <div className="h-2 bg-accent-orange" />
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 rounded-xl bg-accent-orange/10 flex items-center justify-center mb-4">
+                    <HardHat className="h-6 w-6 text-accent-orange" />
+                  </div>
+                  <h3 className="font-display font-bold text-foreground text-xl mb-2">
+                    For ITI Service Providers
+                  </h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Browse government job postings, submit competitive bids,
+                    showcase your ITI certifications, and grow your professional
+                    reputation.
+                  </p>
+                  <ul className="space-y-2 mb-5">
+                    {[
+                      "Browse hundreds of job listings",
+                      "Submit bids with your best price",
+                      "Build verified service portfolio",
+                      "Get paid for quality work",
+                    ].map((f) => (
+                      <li
+                        key={f}
+                        className="flex items-center gap-2 text-sm text-foreground/80"
+                      >
+                        <CheckCircle2 className="h-4 w-4 text-accent-orange flex-shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    asChild
+                    className="bg-accent-orange text-white rounded-lg hover:bg-accent-orange/90"
+                    data-ocid="landing.provider.secondary_button"
+                  >
+                    <Link to="/auth">
+                      Join as Provider <ArrowRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </>
+          )}
+
+          {/* Admin card — always visible */}
+          <Card
+            className="border border-border rounded-xl shadow-card overflow-hidden"
+            data-ocid="landing.admin.card"
+          >
+            <div className="h-2 bg-destructive" />
             <CardContent className="p-6">
-              <div className="w-12 h-12 rounded-xl bg-accent-orange/10 flex items-center justify-center mb-4">
-                <HardHat className="h-6 w-6 text-accent-orange" />
+              <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center mb-4">
+                <Shield className="h-6 w-6 text-destructive" />
               </div>
               <h3 className="font-display font-bold text-foreground text-xl mb-2">
-                For ITI Service Providers
+                Platform Administrator
               </h3>
               <p className="text-muted-foreground text-sm mb-4">
-                Browse government job postings, submit competitive bids,
-                showcase your ITI certifications, and grow your professional
-                reputation.
+                Access the admin dashboard to verify service providers, monitor
+                jobs, manage users, and maintain platform integrity.
               </p>
               <ul className="space-y-2 mb-5">
                 {[
-                  "Browse hundreds of job listings",
-                  "Submit bids with your best price",
-                  "Build verified service portfolio",
-                  "Get paid for quality work",
+                  "Verify ITI-trained service providers",
+                  "Monitor all active jobs",
+                  "Manage all platform users",
+                  "View platform analytics",
                 ].map((f) => (
                   <li
                     key={f}
                     className="flex items-center gap-2 text-sm text-foreground/80"
                   >
-                    <CheckCircle2 className="h-4 w-4 text-accent-orange flex-shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-destructive flex-shrink-0" />
                     {f}
                   </li>
                 ))}
               </ul>
               <Button
                 asChild
-                className="bg-accent-orange text-white rounded-lg hover:bg-accent-orange/90"
-                data-ocid="landing.provider.secondary_button"
+                className="bg-destructive text-white rounded-lg hover:bg-destructive/90"
+                data-ocid="landing.admin.primary_button"
               >
                 <Link to="/auth">
-                  Join as Provider <ArrowRight className="h-4 w-4 ml-1" />
+                  Login as Admin <ArrowRight className="h-4 w-4 ml-1" />
                 </Link>
               </Button>
             </CardContent>

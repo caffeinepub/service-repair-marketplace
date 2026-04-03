@@ -1,12 +1,5 @@
-import {
-  type ReactNode,
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { type ReactNode, createContext, useContext } from "react";
 import type { SRMRole, UserInfo } from "../backend";
-import { SRMRole as SRMRoleEnum } from "../backend";
 import { useInternetIdentity } from "./useInternetIdentity";
 import { useGetCallerUserProfile } from "./useQueries";
 
@@ -14,6 +7,7 @@ interface AppContextType {
   userProfile: UserInfo | null | undefined;
   isLoadingProfile: boolean;
   isAuthenticated: boolean;
+  isProfileError: boolean;
   role: SRMRole | null;
   needsProfileSetup: boolean;
   refetchProfile: () => void;
@@ -29,19 +23,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     data: userProfile,
     isLoading: isLoadingProfile,
     isFetched,
+    isError: isProfileError,
     refetch: refetchProfile,
   } = useGetCallerUserProfile();
 
-  const role = userProfile?.role ?? null;
+  // If profile query errored, treat as no profile / no setup needed
+  const role = isProfileError ? null : (userProfile?.role ?? null);
   const needsProfileSetup =
-    isAuthenticated && !isLoadingProfile && isFetched && userProfile === null;
+    !isProfileError &&
+    isAuthenticated &&
+    !isLoadingProfile &&
+    isFetched &&
+    userProfile === null;
 
   return (
     <AppContext.Provider
       value={{
-        userProfile,
+        userProfile: isProfileError ? null : userProfile,
         isLoadingProfile,
         isAuthenticated,
+        isProfileError,
         role,
         needsProfileSetup,
         refetchProfile,

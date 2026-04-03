@@ -45,6 +45,18 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Admin-only guard wrapper
+function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoadingProfile, role } = useAppContext();
+  if (isLoadingProfile) return <LoadingSpinner className="min-h-screen" />;
+  if (!isAuthenticated) return <Navigate to="/auth" />;
+  if (role !== null && role !== SRMRole.admin)
+    return <Navigate to="/dashboard" />;
+  // If role is null but authenticated, show loading briefly while profile resolves
+  if (role === null) return <LoadingSpinner className="min-h-screen" />;
+  return <>{children}</>;
+}
+
 function DashboardRedirect() {
   const { role, isLoadingProfile } = useAppContext();
   if (isLoadingProfile) return <LoadingSpinner className="min-h-screen" />;
@@ -203,9 +215,9 @@ const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dashboard/admin",
   component: () => (
-    <RequireAuth>
+    <RequireAdmin>
       <AdminDashboard />
-    </RequireAuth>
+    </RequireAdmin>
   ),
 });
 
@@ -213,9 +225,9 @@ const adminProvidersRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dashboard/admin/providers",
   component: () => (
-    <RequireAuth>
+    <RequireAdmin>
       <AdminProviders />
-    </RequireAuth>
+    </RequireAdmin>
   ),
 });
 
@@ -223,9 +235,9 @@ const adminJobsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dashboard/admin/jobs",
   component: () => (
-    <RequireAuth>
+    <RequireAdmin>
       <AdminJobs />
-    </RequireAuth>
+    </RequireAdmin>
   ),
 });
 
@@ -233,9 +245,9 @@ const adminUsersRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dashboard/admin/users",
   component: () => (
-    <RequireAuth>
+    <RequireAdmin>
       <AdminUsers />
-    </RequireAuth>
+    </RequireAdmin>
   ),
 });
 
