@@ -1,0 +1,136 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/assets/fonts/PlusJakartaSans.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Figtree";
+  src: url("/assets/fonts/Figtree.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    --radius: 0.625rem;
+
+    /* Brand blues from design spec: #1F6FB2 to #2B73B8 */
+    --primary: 0.46 0.13 239;
+    --primary-foreground: 1 0 0;
+
+    /* Accent orange: #F28C28 */
+    --accent-orange: 0.72 0.16 55;
+    --accent-orange-foreground: 1 0 0;
+
+    /* Background: white */
+    --background: 1 0 0;
+    --foreground: 0.11 0.01 260;
+
+    /* Hero bg: #E8F3FB light sky blue */
+    --hero-bg: 0.96 0.025 228;
+
+    /* Cards */
+    --card: 1 0 0;
+    --card-foreground: 0.11 0.01 260;
+
+    --popover: 1 0 0;
+    --popover-foreground: 0.11 0.01 260;
+
+    /* Secondary text: #4B5563 */
+    --muted: 0.97 0.005 240;
+    --muted-foreground: 0.46 0.02 245;
+
+    --secondary: 0.96 0.025 228;
+    --secondary-foreground: 0.46 0.13 239;
+
+    --accent: 0.97 0.01 240;
+    --accent-foreground: 0.11 0.01 260;
+
+    /* Destructive: red */
+    --destructive: 0.577 0.245 27.325;
+    --destructive-foreground: 0.985 0 0;
+
+    /* Borders: #E5E7EB */
+    --border: 0.92 0.005 240;
+    --input: 0.92 0.005 240;
+    --ring: 0.46 0.13 239;
+
+    /* Status colors */
+    --status-posted: 0.46 0.13 239;
+    --status-bidding: 0.75 0.15 75;
+    --status-assigned: 0.55 0.15 295;
+    --status-inprogress: 0.65 0.16 45;
+    --status-completed: 0.55 0.15 145;
+    --status-reviewed: 0.55 0.14 175;
+    --status-cancelled: 0.5 0 0;
+    --status-disputed: 0.55 0.2 20;
+
+    /* Chart */
+    --chart-1: 0.46 0.13 239;
+    --chart-2: 0.72 0.16 55;
+    --chart-3: 0.55 0.15 145;
+    --chart-4: 0.55 0.15 295;
+    --chart-5: 0.577 0.245 27.325;
+
+    /* Sidebar */
+    --sidebar: 0.11 0.025 235;
+    --sidebar-foreground: 0.97 0.005 240;
+    --sidebar-primary: 0.72 0.16 55;
+    --sidebar-primary-foreground: 0.11 0.01 260;
+    --sidebar-accent: 0.18 0.04 235;
+    --sidebar-accent-foreground: 0.97 0.005 240;
+    --sidebar-border: 0.2 0.04 235;
+    --sidebar-ring: 0.46 0.13 239;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display;
+  }
+}
+
+@layer utilities {
+  .hero-bg {
+    background-color: oklch(var(--hero-bg));
+  }
+  .text-brand-blue {
+    color: oklch(var(--primary));
+  }
+  .bg-brand-blue {
+    background-color: oklch(var(--primary));
+  }
+  .text-accent-orange {
+    color: oklch(var(--accent-orange));
+  }
+  .bg-accent-orange {
+    background-color: oklch(var(--accent-orange));
+  }
+  .sidebar-bg {
+    background-color: oklch(var(--sidebar));
+  }
+}
