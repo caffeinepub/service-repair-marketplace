@@ -8,6 +8,7 @@ import { useParams } from "@tanstack/react-router";
 import {
   Briefcase,
   Calendar,
+  Clock,
   DollarSign,
   ListTodo,
   Loader2,
@@ -148,6 +149,10 @@ export default function ProviderJobDetail() {
     );
   }
 
+  const canBid =
+    !myBid &&
+    (job.status === JobStatus.posted || job.status === JobStatus.bidding);
+
   return (
     <DashboardLayout navItems={NAV_ITEMS} title={job.title}>
       <div className="max-w-2xl space-y-5">
@@ -240,61 +245,80 @@ export default function ProviderJobDetail() {
           </CardContent>
         </Card>
 
-        {/* Bid section */}
-        {!myBid &&
-          (job.status === JobStatus.posted ||
-            job.status === JobStatus.bidding) && (
-            <Card className="border border-border rounded-xl shadow-card">
-              <CardHeader>
-                <CardTitle className="font-display text-lg">
-                  Submit Your Bid
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleBid} className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="bidAmt">Bid Amount (INR) *</Label>
-                    <Input
-                      id="bidAmt"
-                      type="number"
-                      min="0"
-                      value={bidAmount}
-                      onChange={(e) => setBidAmount(e.target.value)}
-                      placeholder={`Up to ${formatCurrency(job.budget)}`}
-                      required
-                      data-ocid="provider.bid.amount.input"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="bidMsg">Message</Label>
-                    <Textarea
-                      id="bidMsg"
-                      value={bidMessage}
-                      onChange={(e) => setBidMessage(e.target.value)}
-                      placeholder="Describe your approach and why you're the best fit..."
-                      rows={3}
-                      data-ocid="provider.bid.message.textarea"
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={submitBid.isPending}
-                    className="w-full bg-accent-orange text-white rounded-xl hover:bg-accent-orange/90"
-                    data-ocid="provider.bid.submit.primary_button"
-                  >
-                    {submitBid.isPending ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      "Submit Bid"
-                    )}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          )}
+        {/* Pending Verification card — shown instead of bid form for unverified providers */}
+        {canBid && !userProfile?.isVerified && (
+          <Card
+            className="border border-yellow-200 bg-yellow-50 rounded-xl"
+            data-ocid="provider.bid.pending_verification.card"
+          >
+            <CardContent className="p-5 flex items-start gap-3">
+              <Clock className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-yellow-800">
+                  Pending Verification
+                </p>
+                <p className="text-xs text-yellow-700 mt-0.5">
+                  Admin is reviewing your profile. You'll be notified once
+                  verified.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Bid submission form — only for verified providers */}
+        {canBid && userProfile?.isVerified && (
+          <Card className="border border-border rounded-xl shadow-card">
+            <CardHeader>
+              <CardTitle className="font-display text-lg">
+                Submit Your Bid
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleBid} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="bidAmt">Bid Amount (INR) *</Label>
+                  <Input
+                    id="bidAmt"
+                    type="number"
+                    min="0"
+                    value={bidAmount}
+                    onChange={(e) => setBidAmount(e.target.value)}
+                    placeholder={`Up to ${formatCurrency(job.budget)}`}
+                    required
+                    data-ocid="provider.bid.amount.input"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="bidMsg">Message</Label>
+                  <Textarea
+                    id="bidMsg"
+                    value={bidMessage}
+                    onChange={(e) => setBidMessage(e.target.value)}
+                    placeholder="Describe your approach and why you're the best fit..."
+                    rows={3}
+                    data-ocid="provider.bid.message.textarea"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={submitBid.isPending}
+                  className="w-full bg-accent-orange text-white rounded-xl hover:bg-accent-orange/90"
+                  data-ocid="provider.bid.submit.primary_button"
+                >
+                  {submitBid.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Bid"
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Existing bid status */}
         {myBid && (
