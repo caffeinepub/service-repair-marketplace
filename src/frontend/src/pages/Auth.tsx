@@ -34,7 +34,7 @@ type SetupStep = "role" | "details";
 const ROLE_OPTIONS = [
   {
     value: SRMRole.institution,
-    label: "Institution",
+    label: "Organization",
     desc: "Post service jobs, review bids, and manage contractors.",
     icon: Building2,
     activeColor: "border-primary bg-primary text-white",

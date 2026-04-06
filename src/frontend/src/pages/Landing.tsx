@@ -177,7 +177,7 @@ export default function Landing() {
                   >
                     <Link to="/auth">
                       <Building2 className="h-4 w-4 mr-2" />
-                      I'm an Institution
+                      I'm an Organization
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Link>
                   </Button>
@@ -273,7 +273,7 @@ export default function Landing() {
                   <Building2 className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="font-display font-bold text-foreground text-xl mb-2">
-                  For Any Institution
+                  For Any Organization
                 </h3>
                 <p className="text-muted-foreground text-sm mb-4">
                   Post repair &amp; maintenance jobs, review bids from verified
