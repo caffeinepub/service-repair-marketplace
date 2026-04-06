@@ -16,8 +16,8 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground max-w-xs">
-              Connecting government institutions with skilled ITI-trained
-              service providers across India.
+              Connecting institutions and organizations with skilled service
+              providers worldwide.
             </p>
           </div>
           <div>
@@ -79,7 +79,7 @@ export default function Footer() {
         </div>
         <div className="border-t border-border pt-6 flex flex-col sm:flex-row justify-between items-center gap-2">
           <p className="text-xs text-muted-foreground">
-            © {year} Service &amp; Repair Marketplace. All rights reserved.
+            &copy; {year} Service &amp; Repair Marketplace. All rights reserved.
           </p>
           <p className="text-xs text-muted-foreground">
             Built with ❤️ using{" "}

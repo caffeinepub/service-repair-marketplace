@@ -1,39 +1,38 @@
 # Service & Repair Marketplace
 
 ## Current State
-
-SRM has three role dashboards. After login, users redirect to their role dashboard.
-Admin dashboard calls getAnalytics() and getUnverifiedProviders() - both require isSRMAdmin().
-
-Bug: after logging in as Platform Admin, the admin dashboard appears blank/empty.
-
-Root causes:
-1. Landing.tsx calls useGetAnalytics() which traps for non-admin users
-2. AdminDashboard has no error/empty fallback - blank when queries fail
-3. useAppContext does not handle query errors from useGetCallerUserProfile
-4. No role guard on admin routes
+The platform currently uses government-specific language throughout the UI: "Government Institution", "government-grade marketplace", "government job postings", "For Government Institutions", "Connecting government institutions with skilled service providers across India", and related phrases. This limits the perceived audience to public sector entities.
 
 ## Requested Changes (Diff)
 
 ### Add
-- RequireAdmin wrapper in App.tsx for /dashboard/admin/* routes
-- Error/empty states in AdminDashboard when queries fail
-- isError handling in useAppContext
+- Nothing new to add.
 
 ### Modify
-- Landing.tsx: replace useGetAnalytics() with useGetAllJobs()+useGetProviders() for stats
-- useQueries.ts useGetCallerUserProfile: add throwOnError: false
-- useAppContext.tsx: handle isError from profile query
-- AdminDashboard.tsx: add isError states and loading UI
-- App.tsx: add RequireAdmin guard for admin routes
+- **Landing.tsx**: Replace all government-specific phrases with inclusive, universal language:
+  - "Government institutions post repair & maintenance requirements" → "Any institution posts repair & maintenance requirements"
+  - "A government-grade marketplace" → "A trusted marketplace"
+  - "For Government Institutions" → "For Any Institution"
+  - "Browse government job postings" → "Browse job postings"
+  - "government-grade" and similar → neutral/inclusive equivalents
+- **Auth.tsx**:
+  - Role label `"Government Institution"` → `"Institution"`
+  - Placeholder `"Ministry / Company / Institution"` → `"Company / Organization / Institution"`
+- **Footer.tsx**:
+  - Tagline `"Connecting government institutions with skilled service providers across India."` → `"Connecting institutions and organizations with skilled service providers worldwide."`
+- **InstitutionDashboard.tsx**:
+  - Fallback text `"Government Institution"` → `"Institution"`
+- **InstitutionProfile.tsx**:
+  - Placeholder `"Ministry / Department / Institution name"` → `"Company / Organization / Institution name"`
+  - Description `"Upload your institution's logo or representative photo"` → stays the same (already generic)
 
 ### Remove
-- Nothing
+- All government-specific framing ("government-grade", "government institutions", "across India" geography-lock)
 
 ## Implementation Plan
-
-1. Fix Landing.tsx stats: use getAllJobs() and getProviders() counts instead of getAnalytics()
-2. Fix useGetCallerUserProfile: add throwOnError: false
-3. Fix useAppContext: handle isError gracefully
-4. Fix AdminDashboard: add error states so blank screen is replaced with informative UI
-5. Add RequireAdmin in App.tsx for admin routes
+1. Update `Landing.tsx` — all 8+ government-specific text strings to inclusive alternatives
+2. Update `Auth.tsx` — role label and organization placeholder
+3. Update `Footer.tsx` — tagline
+4. Update `InstitutionDashboard.tsx` — fallback organization name
+5. Update `InstitutionProfile.tsx` — placeholder text
+6. Validate and deploy

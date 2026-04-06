@@ -173,7 +173,7 @@ export default function InstitutionProfile() {
                   onChange={(e) =>
                     setForm((p) => ({ ...p, organization: e.target.value }))
                   }
-                  placeholder="Ministry / Department / Institution name"
+                  placeholder="Company / Organization / Institution name"
                 />
               </div>
               <Button

@@ -166,11 +166,11 @@ export default function AdminDashboard() {
             <CardContent className="p-4 flex items-center justify-between">
               <div>
                 <p className="font-semibold text-yellow-800">
-                  {unverified?.length} provider
+                  {unverified?.length} skilled provider
                   {unverified!.length > 1 ? "s" : ""} pending verification
                 </p>
                 <p className="text-sm text-yellow-700">
-                  Review and verify service providers to enable bidding.
+                  Review and verify skilled providers to enable bidding.
                 </p>
               </div>
               <Button

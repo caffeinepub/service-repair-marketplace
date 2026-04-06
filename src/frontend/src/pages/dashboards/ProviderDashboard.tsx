@@ -79,7 +79,7 @@ export default function ProviderDashboard() {
     ? (
         reviews.reduce((sum, r) => sum + Number(r.rating), 0) / reviews.length
       ).toFixed(1)
-    : "—";
+    : "\u2014";
 
   const isVerified = userProfile?.isVerified;
 
@@ -91,7 +91,7 @@ export default function ProviderDashboard() {
             Welcome, {userProfile?.name?.split(" ")[0] ?? "Provider"}
           </h2>
           <p className="text-muted-foreground text-sm mt-1">
-            ITI Service Provider
+            Skilled Service Provider
           </p>
         </div>
 

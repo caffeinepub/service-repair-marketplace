@@ -77,7 +77,7 @@ export default function InstitutionDashboard() {
             Welcome back, {userProfile?.name?.split(" ")[0] ?? "User"}
           </h2>
           <p className="text-muted-foreground text-sm mt-1">
-            {userProfile?.organization || "Government Institution"}
+            {userProfile?.organization || "Institution"}
           </p>
         </div>
 

@@ -22,7 +22,7 @@ export default function ProvidersPage() {
             Service Providers
           </h1>
           <p className="text-muted-foreground">
-            {verified.length} verified ITI-trained providers
+            {verified.length} verified skilled providers
           </p>
         </div>
 

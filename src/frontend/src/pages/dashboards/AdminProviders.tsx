@@ -66,7 +66,7 @@ function ProviderCard({
   const handleVerify = async () => {
     try {
       await verify.mutateAsync(provider.principal);
-      toast.success(`${provider.name} verified!`);
+      toast.success(`${provider.name} verified as a skilled provider!`);
     } catch (err: any) {
       toast.error(err?.message ?? "Failed to verify provider");
     }
@@ -99,7 +99,7 @@ function ProviderCard({
                 variant="outline"
               >
                 <CheckCircle2 className="h-3 w-3 mr-1" />
-                Verified
+                Verified Skilled Provider
               </Badge>
             ) : (
               <Badge
@@ -107,7 +107,7 @@ function ProviderCard({
                 variant="outline"
               >
                 <Clock className="h-3 w-3 mr-1" />
-                Pending
+                Pending Verification
               </Badge>
             )}
             {showVerify && !provider.isVerified && (
@@ -157,22 +157,22 @@ export default function AdminProviders() {
   const isLoading = tab === "unverified" ? unverifiedLoading : allLoading;
 
   return (
-    <DashboardLayout navItems={NAV_ITEMS} title="Service Providers">
+    <DashboardLayout navItems={NAV_ITEMS} title="Skilled Providers">
       <div className="space-y-4">
         <h2 className="font-display font-bold text-foreground text-xl">
-          Service Providers
+          Skilled Providers
         </h2>
 
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList>
             <TabsTrigger value="all" data-ocid="admin.providers.all.tab">
-              All Providers
+              All Skilled Providers
             </TabsTrigger>
             <TabsTrigger
               value="unverified"
               data-ocid="admin.providers.unverified.tab"
             >
-              Unverified{" "}
+              Pending Verification{" "}
               {(unverified?.length ?? 0) > 0 && `(${unverified!.length})`}
             </TabsTrigger>
           </TabsList>
@@ -192,8 +192,8 @@ export default function AdminProviders() {
                 title="No providers found"
                 description={
                   tab === "unverified"
-                    ? "All providers are verified."
-                    : "No service providers have registered."
+                    ? "All skilled providers are verified."
+                    : "No skilled providers have registered yet."
                 }
                 ocid="admin.providers.empty_state"
               />

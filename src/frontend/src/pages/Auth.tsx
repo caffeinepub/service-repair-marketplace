@@ -34,15 +34,15 @@ type SetupStep = "role" | "details";
 const ROLE_OPTIONS = [
   {
     value: SRMRole.institution,
-    label: "Government Institution",
+    label: "Institution",
     desc: "Post service jobs, review bids, and manage contractors.",
     icon: Building2,
     activeColor: "border-primary bg-primary text-white",
   },
   {
     value: SRMRole.serviceProvider,
-    label: "ITI Service Provider",
-    desc: "Browse jobs, submit bids, and grow your business.",
+    label: "Skilled Service Provider",
+    desc: "Browse jobs, submit bids, and grow your business with your skills.",
     icon: HardHat,
     activeColor: "border-accent-orange bg-accent-orange text-white",
   },
@@ -323,7 +323,7 @@ export default function AuthPage() {
                               organization: e.target.value,
                             }))
                           }
-                          placeholder="Ministry / Company / Institution"
+                          placeholder="Company / Organization / Institution"
                           data-ocid="auth.details.organization.input"
                         />
                       </div>
@@ -340,7 +340,7 @@ export default function AuthPage() {
                                   skills: e.target.value,
                                 }))
                               }
-                              placeholder="Electrical, Plumbing, Carpentry"
+                              placeholder="e.g. Electrical, Plumbing, IT Support, Painting"
                             />
                           </div>
                           <div className="space-y-1.5">
@@ -354,7 +354,7 @@ export default function AuthPage() {
                                   experience: e.target.value,
                                 }))
                               }
-                              placeholder="Describe your experience..."
+                              placeholder="Describe your experience, certifications, or trade background..."
                               rows={3}
                             />
                           </div>
